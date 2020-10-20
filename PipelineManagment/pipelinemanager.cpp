@@ -1,12 +1,12 @@
 #include "pipelinemanager.h"
 
-
 PipelineManager::PipelineManager(QWidget *parent)
     : QWidget(parent)
-{
+{    
     m_logTable = new QTableWidget;
     m_arduinoPort = new QSerialPort;
-    m_logErrorWindow = new QTextBrowser;    
+    m_logErrorWindow = new QTextBrowser;
+    ManualControlWindow* m_windowControl =  new ManualControlWindow;
 
     createConntrolButtons();
     createPipelineStatusTable();
@@ -25,9 +25,14 @@ PipelineManager::PipelineManager(QWidget *parent)
     connect(m_buttons[ThirdButton], &QPushButton::clicked,
             this, &PipelineManager::on_pushButtonManualControlClicked);
 
-//    connect(m_windowControl, &ManualControlWindow::sendData,
-//            this, &PipelineManager::sendDataToPipeline);
+    connect(this, &PipelineManager::showWindow,
+            m_windowControl, &ManualControlWindow::showWindow);
 
+    connect(m_windowControl, &ManualControlWindow::sendData,
+            this, &PipelineManager::addDataTable);
+
+    connect(m_windowControl, &ManualControlWindow::sendCommand,
+            this, &PipelineManager::sendStartToPipeline);
 
 }
 
@@ -37,7 +42,7 @@ PipelineManager::~PipelineManager()
 
         //Close the serial port
         m_arduinoPort->close();
-    }
+    }   
 }
 
 void PipelineManager::createConntrolButtons()
@@ -101,10 +106,10 @@ void PipelineManager::on_pushButtonStartClicked()
     m_buttons[ThirdButton]->setEnabled(false);
 
     //commands to start all pipelines
-    char startCommands[3] = {'a', 'b', 'c'};
+    char startCommands[3] {'a', 'b', 'c'};
 
     //start all pipelines
-    sendStartToPipeline(startCommands);
+    emit sendStartToPipeline(startCommands);
 
     //message for the event
     QString event{"Start all pipelines"};
@@ -112,7 +117,7 @@ void PipelineManager::on_pushButtonStartClicked()
     //time and date for the event
     QString dataTime = getDataTime();    
 
-    addDataTable(dataTime, event);
+    emit addDataTable(dataTime, event);
 
 }
 
@@ -126,26 +131,20 @@ void PipelineManager::on_pushButtonStopClicked()
 
     char stopCommands[3] = {'x', 'y', 'z'};
 
-    sendStopToPipeline(stopCommands);
+    emit sendStopToPipeline(stopCommands);
 
     QString event{"Stop all pipelines"};
     QString dataTime = getDataTime();
 
-    addDataTable(dataTime, event);
+    emit addDataTable(dataTime, event);
 
 
 }
 
 void PipelineManager::on_pushButtonManualControlClicked()
 {
-    //initilalizing the manual control window
-    ManualControlWindow*  m_windowControl = new ManualControlWindow;
-
     //call manual control window
-    m_windowControl->setFixedSize(800, 400);
-    m_windowControl->show();
-
-
+    emit showWindow();
 }
 
 void PipelineManager::initArduinoPort()
@@ -224,5 +223,4 @@ void PipelineManager::addDataTable(const QString& dataTime, const QString& messa
         m_logTable->setItem(m_count, 1, new QTableWidgetItem(message));
         m_count++;
     }
-
 }
