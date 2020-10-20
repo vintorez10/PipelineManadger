@@ -16,28 +16,28 @@
 #include <QSerialPortInfo>
 #include <QDateTime>
 #include <QString>
-#include <manualcontrolwindow.h>
-
+#include "manualcontrolwindow.h"
 
 class PipelineManager : public QWidget
 {
     Q_OBJECT
 
 public:
-    PipelineManager(QWidget *parent = nullptr);
+     PipelineManager(QWidget *parent = nullptr);
     ~PipelineManager();
 
     void initArduinoPort();
-    void addDataTable(const QString& dataTime, const QString& message);
-    void sendStartToPipeline(const char* dataStart);
-    void sendStopToPipeline(const char* dataStop);
-    QString getDataTime(){return  QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");}
-    int m_count;    
+    QString getDataTime(){return  QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");}     
 
 private slots:
     void on_pushButtonStartClicked();
     void on_pushButtonStopClicked();
     void on_pushButtonManualControlClicked();
+
+public slots:
+    void addDataTable(const QString& dataTime, const QString& message);
+    void sendStartToPipeline(const char* dataStart);
+    void sendStopToPipeline(const char* dataStop);
 
 private:
     enum{FirstButton = 0, SecondButton = 1,
@@ -45,7 +45,7 @@ private:
 
     void createConntrolButtons();
     void createPipelineStatusTable();
-    void setState(bool state);    
+    void setState(bool state);
 
     QVBoxLayout* m_mainLayout;
     QGroupBox* m_horizantalButtonBox;
@@ -54,8 +54,14 @@ private:
     QTableWidget* m_logTable;
     QTableWidgetItem* m_logItem;
     QTextBrowser* m_logErrorWindow;
-    QSerialPort* m_arduinoPort;   
-    QString m_arduinoPortName;   
+    QSerialPort* m_arduinoPort;
+    QString m_arduinoPortName;
+    int m_count = 0;
+
+signals:
+    void initCommand(const char* ch);
+    void showWindow();
+
 
 };
 #endif // PIPELINEMANAGER_H
