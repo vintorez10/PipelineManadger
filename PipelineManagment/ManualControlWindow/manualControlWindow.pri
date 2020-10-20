@@ -1,4 +1,3 @@
-
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
@@ -7,4 +6,3 @@ HEADERS += \
 
 SOURCES += \
     $$PWD/manualcontrolwindow.cpp
-
