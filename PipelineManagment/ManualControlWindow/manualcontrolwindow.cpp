@@ -1,21 +1,16 @@
 #include "manualcontrolwindow.h"
 
-
-ManualControlWindow::ManualControlWindow(QWidget *parent) : QWidget(parent)
-{   
+ManualControlWindow::ManualControlWindow(QWidget *parent)
+     : QWidget(parent)
+{
     createConntrolButtons();
-
-    m_manager = new PipelineManager;
 
     m_mainLayout = new QVBoxLayout;
     m_mainLayout->addWidget(m_horisontalGroupBox);
     setLayout(m_mainLayout);
 
-    connect(this, &ManualControlWindow::sendData,
-            m_manager, &PipelineManager::addDataTable);
-
     connect(m_buttons[FirstButton], &QPushButton::clicked,
-            this, &ManualControlWindow::on_pushButtonFirstClicked);
+            this, &ManualControlWindow::on_pushButtonFirstClicked);   
 
     connect(m_buttons[SecondButton], &QPushButton::clicked,
             this, &ManualControlWindow::on_pushButtonSecondClicked);
@@ -24,7 +19,7 @@ ManualControlWindow::ManualControlWindow(QWidget *parent) : QWidget(parent)
             this, &ManualControlWindow::on_pushButtonThirdClicked);
 
     connect(m_buttons[FourthButton], &QPushButton::clicked,
-            this, &ManualControlWindow::on_pushButtonStopClicked);
+            this, &ManualControlWindow::on_pushButtonStopClicked);    
 
 }
 
@@ -52,21 +47,25 @@ void ManualControlWindow::createConntrolButtons()
 }
 
 void ManualControlWindow::on_pushButtonFirstClicked()
-{
+{    
     //when we click button we making this button invisible
     m_buttons[FirstButton]->setEnabled(false);
 
     //and "StopClicked" button we making visible
     m_buttons[FourthButton]->setEnabled(true);
 
-    char firstPipe[] = {'a'};
+    //creating a command, to start the first pipeline
+    char firstPipe[] {'a'};
 
-    m_manager->sendStartToPipeline(firstPipe);
+    //sending a command in the main widget
+    emit sendCommand(firstPipe);
 
-    QString event{"Start first pipeline"};
-    QString dataTime = m_manager->getDataTime();
+    //creating a message, to write to the log
+    m_event = {"Start first pipeline"};
+    m_dataTime = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
 
-    emit sendData(event, dataTime);
+    //sending a message, to the main widget
+    emit sendData(m_dataTime, m_event);
 
 }
 
@@ -76,14 +75,14 @@ void ManualControlWindow::on_pushButtonSecondClicked()
     m_buttons[SecondButton]->setEnabled(false);
     m_buttons[FourthButton]->setEnabled(true);
 
-    char secondPipe[] = {'b'};
+    char secondPipe[] {'b'};
+    emit sendCommand(secondPipe);
 
-    m_manager->sendStartToPipeline(secondPipe);
+    m_event = {"Start second pipeline"};
+    m_dataTime = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
 
-    QString event{"Start second pipeline"};
-    QString dataTime = m_manager->getDataTime();
+    emit sendData(m_dataTime, m_event);
 
-    emit sendData(event, dataTime);
 }
 
 void ManualControlWindow::on_pushButtonThirdClicked()
@@ -92,14 +91,13 @@ void ManualControlWindow::on_pushButtonThirdClicked()
     m_buttons[ThirdButton]->setEnabled(false);
     m_buttons[FourthButton]->setEnabled(true);
 
-    char thirdPipe[] = {'c'};
+    char thirdPipe[] {'c'};
+    emit sendCommand(thirdPipe);
 
-    m_manager->sendStartToPipeline(thirdPipe);
+    m_event = {"Start third pipeline"};
+    m_dataTime = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
 
-    QString event{"Start third pipeline"};
-    QString dataTime = m_manager->getDataTime();
-
-    emit sendData(event, dataTime);
+    emit sendData(m_dataTime, m_event);
 }
 
 void ManualControlWindow::on_pushButtonStopClicked()
@@ -111,14 +109,19 @@ void ManualControlWindow::on_pushButtonStopClicked()
     m_buttons[SecondButton]->setEnabled(true);
     m_buttons[ThirdButton]->setEnabled(true);
 
-    char stopCommands[3] = {'x', 'y', 'z'};
+    char stopCommands[3] {'x', 'y', 'z'};
+    emit sendCommand(stopCommands);
 
-    m_manager->sendStopToPipeline(stopCommands);
+    m_event = {"Stop all pipelines"};
+    m_dataTime = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
 
-    QString event{"Stop all pipelines"};
-    QString dataTime = m_manager->getDataTime();
+    emit sendData(m_dataTime, m_event);
+}
 
-    emit sendData(event, dataTime);
+void ManualControlWindow::showWindow()
+{
+    this->setFixedSize(800, 400);
+    this->show();
 }
 
 void ManualControlWindow::setColorButton()
@@ -149,6 +152,3 @@ void ManualControlWindow::setColorButton()
     m_buttons[FourthButton]->update();
 
 }
-
-
-
